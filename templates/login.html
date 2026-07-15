@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Acesso da redação — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="login-shell">
+  <h1>Credencial de imprensa</h1>
+  <p class="subtitle">Acesso restrito à redação do {{ site_name }}</p>
+  <form method="POST">
+    <div class="field">
+      <label for="username">Usuário</label>
+      <input type="text" id="username" name="username" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Senha</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button class="btn" type="submit" style="width:100%;">Entrar na redação</button>
+  </form>
+</div>
+{% endblock %}
