@@ -22,9 +22,9 @@ export default function Hero({ a }) {
           <div className="flex items-center gap-2 text-xs font-body text-navy">
             <span>{a.author}</span>
             <span>·</span>
-            <span>{a.date}</span>
+            <span>{a.article_date}</span>
             <span>·</span>
-            <span>{a.read} de leitura</span>
+            <span>{a.read_time} de leitura</span>
           </div>
         </div>
       </div>

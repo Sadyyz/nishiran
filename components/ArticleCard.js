@@ -9,7 +9,7 @@ export default function ArticleCard({ a, compact }) {
       <div className="text-[11px] tracking-widest uppercase flex items-center gap-2 font-mono text-hanko">
         <span>{a.category}</span>
         <span className="text-gold">·</span>
-        <span className="text-navy">{a.read}</span>
+        <span className="text-navy">{a.read_time}</span>
       </div>
       <h3
         className={`${
@@ -26,7 +26,7 @@ export default function ArticleCard({ a, compact }) {
       <div className="flex items-center gap-2 mt-1 text-xs font-body text-navy">
         <span>{a.author}</span>
         <span>·</span>
-        <span>{a.date}</span>
+        <span>{a.article_date}</span>
       </div>
     </Link>
   );

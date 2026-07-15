@@ -5,14 +5,18 @@ import Masthead from "../../../components/Masthead";
 import Footer from "../../../components/Footer";
 import ArticleCard from "../../../components/ArticleCard";
 import Seal from "../../../components/Seal";
-import { ARTICLES } from "../../../data/articles";
+import { createClient } from "../../../lib/supabase/server";
 
-export function generateStaticParams() {
-  return ARTICLES.map((a) => ({ slug: a.slug }));
-}
+export const revalidate = 0;
 
-export function generateMetadata({ params }) {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
+export async function generateMetadata({ params }) {
+  const supabase = createClient();
+  const { data: article } = await supabase
+    .from("articles")
+    .select("title, subtitle")
+    .eq("slug", params.slug)
+    .single();
+
   if (!article) return { title: "Matéria não encontrada — Nishiran" };
   return {
     title: `${article.title} — Nishiran`,
@@ -20,13 +24,24 @@ export function generateMetadata({ params }) {
   };
 }
 
-export default function ArticlePage({ params }) {
-  const article = ARTICLES.find((a) => a.slug === params.slug);
+export default async function ArticlePage({ params }) {
+  const supabase = createClient();
+  const { data: article } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", params.slug)
+    .single();
+
   if (!article) notFound();
 
-  const related = ARTICLES.filter(
-    (a) => a.category === article.category && a.id !== article.id
-  ).slice(0, 3);
+  const { data: relatedRaw } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("category", article.category)
+    .neq("id", article.id)
+    .limit(3);
+
+  const related = relatedRaw || [];
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -57,7 +72,7 @@ export default function ArticlePage({ params }) {
           <div className="text-sm font-body text-navy">
             <div className="font-bold text-ink">{article.author}</div>
             <div className="flex items-center gap-1 text-xs">
-              <CalendarDays size={12} /> {article.date} · {article.read} de leitura
+              <CalendarDays size={12} /> {article.article_date} · {article.read_time} de leitura
             </div>
           </div>
         </div>
