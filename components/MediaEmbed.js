@@ -2,7 +2,8 @@
 // - Link direto de arquivo (.mp4, .webm, .mov, .m4v) -> <video> nativo.
 //   Cobre anexos do Discord, links diretos, etc.
 // - YouTube (link normal ou youtu.be) -> iframe de embed oficial.
-// - Qualquer outro link (Medal, Streamable, Twitch clip, etc.) -> iframe genérico.
+// - Medal.tv (link de compartilhamento) -> convertido pro formato de embed deles.
+// - Qualquer outro link (Streamable, Twitch clip, etc.) -> iframe genérico.
 function getVideoEmbed(url) {
   const directFile = /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(url);
   if (directFile) return { kind: "file", src: url };
@@ -12,6 +13,14 @@ function getVideoEmbed(url) {
   );
   if (ytMatch) {
     return { kind: "iframe", src: `https://www.youtube.com/embed/${ytMatch[1]}` };
+  }
+
+  // Link de compartilhamento do Medal: medal.tv/games/{jogo}/clips/{id}/{slug}?invite=...
+  // Precisa virar o formato de embed: medal.tv/games/{jogo}/clip/{id} (sem slug, sem invite)
+  const medalMatch = url.match(/medal\.tv\/games\/([^/]+)\/clips?\/([a-zA-Z0-9]+)/);
+  if (medalMatch) {
+    const [, game, id] = medalMatch;
+    return { kind: "iframe", src: `https://medal.tv/games/${game}/clip/${id}` };
   }
 
   return { kind: "iframe", src: url };
