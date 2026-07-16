@@ -7,6 +7,25 @@ export default function Hero({ a }) {
       href={`/articles/${a.slug}`}
       className="text-left block w-full px-5 md:px-10 py-8 border-b-2 border-ink"
     >
+      {a.media_url && (
+        <div className="mb-5 -mx-5 md:-mx-10">
+          {a.media_type === "video" ? (
+            <video
+              src={a.media_url}
+              className="w-full max-h-[420px] object-cover"
+              controls
+              muted
+            />
+          ) : (
+            <img
+              src={a.media_url}
+              alt={a.title}
+              className="w-full max-h-[420px] object-cover"
+            />
+          )}
+        </div>
+      )}
+
       <div className="flex items-start gap-5">
         <Seal ch={a.seal} size={56} />
         <div className="flex-1">

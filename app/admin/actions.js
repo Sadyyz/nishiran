@@ -38,6 +38,37 @@ function validate(fields) {
   return null;
 }
 
+const MAX_MEDIA_BYTES = 25 * 1024 * 1024; // 25MB
+
+// Envia a foto/vídeo da manchete pro Storage do Supabase e devolve a URL pública.
+// Retorna null se nenhum arquivo foi selecionado no formulário.
+async function uploadMedia(supabase, formData) {
+  const file = formData.get("media_file");
+  if (!file || typeof file === "string" || file.size === 0) return null;
+
+  const isImage = file.type.startsWith("image/");
+  const isVideo = file.type.startsWith("video/");
+  if (!isImage && !isVideo) {
+    throw new Error("O arquivo precisa ser uma imagem ou um vídeo.");
+  }
+  if (file.size > MAX_MEDIA_BYTES) {
+    throw new Error("O arquivo precisa ter no máximo 25MB.");
+  }
+
+  const ext = file.name.split(".").pop();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("article-media")
+    .upload(path, file, { contentType: file.type });
+
+  if (error) throw new Error("Falha ao enviar o arquivo: " + error.message);
+
+  const { data } = supabase.storage.from("article-media").getPublicUrl(path);
+
+  return { media_url: data.publicUrl, media_type: isImage ? "image" : "video" };
+}
+
 export async function createArticle(prevState, formData) {
   const supabase = createClient();
   const {
@@ -49,8 +80,16 @@ export async function createArticle(prevState, formData) {
   const validationError = validate(fields);
   if (validationError) return { error: validationError };
 
+  let media = null;
+  try {
+    media = await uploadMedia(supabase, formData);
+  } catch (e) {
+    return { error: e.message };
+  }
+
   const { error } = await supabase.from("articles").insert({
     ...fields,
+    ...(media || {}),
     created_by: user.id,
   });
 
@@ -77,7 +116,17 @@ export async function updateArticle(id, prevState, formData) {
   const validationError = validate(fields);
   if (validationError) return { error: validationError };
 
-  const { error } = await supabase.from("articles").update(fields).eq("id", id);
+  let media = null;
+  try {
+    media = await uploadMedia(supabase, formData);
+  } catch (e) {
+    return { error: e.message };
+  }
+
+  const { error } = await supabase
+    .from("articles")
+    .update({ ...fields, ...(media || {}) })
+    .eq("id", id);
 
   if (error) {
     if (error.code === "23505") {

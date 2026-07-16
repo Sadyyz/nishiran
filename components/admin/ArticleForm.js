@@ -23,6 +23,19 @@ export default function ArticleForm({ action, initial, submitLabel }) {
   const [state, formAction] = useFormState(action, { error: null });
   const [slug, setSlug] = useState(initial?.slug || "");
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [mediaPreview, setMediaPreview] = useState(null);
+
+  function handleMediaChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setMediaPreview(null);
+      return;
+    }
+    setMediaPreview({
+      url: URL.createObjectURL(file),
+      type: file.type.startsWith("video/") ? "video" : "image",
+    });
+  }
 
   function handleTitleChange(e) {
     if (!slugTouched) {
@@ -154,6 +167,50 @@ export default function ArticleForm({ action, initial, submitLabel }) {
           defaultValue={initial?.read_time || "4 min"}
           className="border border-paperDark bg-white px-3 py-2 text-sm font-body outline-none focus:border-hanko max-w-[160px]"
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-mono uppercase tracking-wide text-navy">
+          Foto ou vídeo da manchete
+        </label>
+        <span className="text-xs font-body text-navy mb-1">
+          Só aparece se essa matéria virar a manchete (destaque do topo). Opcional — até 25MB.
+        </span>
+        <input
+          type="file"
+          name="media_file"
+          accept="image/*,video/*"
+          onChange={handleMediaChange}
+          className="text-sm font-body file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-ink file:text-paper file:font-bold file:cursor-pointer border border-paperDark bg-white px-2 py-2"
+        />
+
+        {mediaPreview ? (
+          mediaPreview.type === "video" ? (
+            <video
+              src={mediaPreview.url}
+              controls
+              className="mt-2 max-h-64 border border-paperDark"
+            />
+          ) : (
+            <img
+              src={mediaPreview.url}
+              alt="Pré-visualização"
+              className="mt-2 max-h-64 object-cover border border-paperDark"
+            />
+          )
+        ) : initial?.media_url ? (
+          <div className="mt-2">
+            <span className="text-xs font-body text-navy block mb-1">Mídia atual:</span>
+            {initial.media_type === "video" ? (
+              <video src={initial.media_url} controls className="max-h-64 border border-paperDark" />
+            ) : (
+              <img src={initial.media_url} alt="Mídia atual" className="max-h-64 object-cover border border-paperDark" />
+            )}
+            <span className="text-xs font-body text-navy block mt-1">
+              Escolha um novo arquivo acima pra substituir.
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-1">
