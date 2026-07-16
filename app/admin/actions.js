@@ -38,21 +38,19 @@ function validate(fields) {
   return null;
 }
 
-const MAX_MEDIA_BYTES = 25 * 1024 * 1024; // 25MB
+const MAX_MEDIA_BYTES = 50 * 1024 * 1024; // 50MB (teto do plano gratuito do Supabase)
 
-// Envia a foto/vídeo da manchete pro Storage do Supabase e devolve a URL pública.
+// Envia a FOTO da matéria pro Storage do Supabase e devolve a URL pública.
 // Retorna null se nenhum arquivo foi selecionado no formulário.
-async function uploadMedia(supabase, formData) {
+async function uploadPhoto(supabase, formData) {
   const file = formData.get("media_file");
   if (!file || typeof file === "string" || file.size === 0) return null;
 
-  const isImage = file.type.startsWith("image/");
-  const isVideo = file.type.startsWith("video/");
-  if (!isImage && !isVideo) {
-    throw new Error("O arquivo precisa ser uma imagem ou um vídeo.");
+  if (!file.type.startsWith("image/")) {
+    throw new Error("O arquivo enviado precisa ser uma imagem. Pra vídeo, use o campo de link.");
   }
   if (file.size > MAX_MEDIA_BYTES) {
-    throw new Error("O arquivo precisa ter no máximo 25MB.");
+    throw new Error("A imagem precisa ter no máximo 50MB.");
   }
 
   const ext = file.name.split(".").pop();
@@ -62,11 +60,29 @@ async function uploadMedia(supabase, formData) {
     .from("article-media")
     .upload(path, file, { contentType: file.type });
 
-  if (error) throw new Error("Falha ao enviar o arquivo: " + error.message);
+  if (error) throw new Error("Falha ao enviar a imagem: " + error.message);
 
   const { data } = supabase.storage.from("article-media").getPublicUrl(path);
 
-  return { media_url: data.publicUrl, media_type: isImage ? "image" : "video" };
+  return { media_url: data.publicUrl, media_type: "image" };
+}
+
+// Le o link de vídeo colado no formulário. Não faz upload — só valida e guarda a URL.
+function readVideoLink(formData) {
+  const url = (formData.get("video_url") || "").toString().trim();
+  if (!url) return null;
+  if (!/^https?:\/\//i.test(url)) {
+    throw new Error("O link do vídeo precisa começar com http:// ou https://");
+  }
+  return { media_url: url, media_type: "video" };
+}
+
+// Decide qual mídia usar: se um link de vídeo foi colado, ele tem prioridade
+// sobre uma foto enviada junto (não faz sentido ter os dois na mesma matéria).
+async function resolveMedia(supabase, formData) {
+  const video = readVideoLink(formData);
+  if (video) return video;
+  return uploadPhoto(supabase, formData);
 }
 
 export async function createArticle(prevState, formData) {
@@ -82,7 +98,7 @@ export async function createArticle(prevState, formData) {
 
   let media = null;
   try {
-    media = await uploadMedia(supabase, formData);
+    media = await resolveMedia(supabase, formData);
   } catch (e) {
     return { error: e.message };
   }
@@ -118,7 +134,7 @@ export async function updateArticle(id, prevState, formData) {
 
   let media = null;
   try {
-    media = await uploadMedia(supabase, formData);
+    media = await resolveMedia(supabase, formData);
   } catch (e) {
     return { error: e.message };
   }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { slugify } from "../../lib/slugify";
+import MediaEmbed from "../MediaEmbed";
 
 const CATEGORIES = ["Notícias", "Entrevistas", "Colunas", "Comunidade"];
 
@@ -23,18 +24,18 @@ export default function ArticleForm({ action, initial, submitLabel }) {
   const [state, formAction] = useFormState(action, { error: null });
   const [slug, setSlug] = useState(initial?.slug || "");
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
-  const [mediaPreview, setMediaPreview] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(
+    initial?.media_type === "video" ? initial?.media_url || "" : ""
+  );
 
-  function handleMediaChange(e) {
+  function handlePhotoChange(e) {
     const file = e.target.files?.[0];
     if (!file) {
-      setMediaPreview(null);
+      setPhotoPreview(null);
       return;
     }
-    setMediaPreview({
-      url: URL.createObjectURL(file),
-      type: file.type.startsWith("video/") ? "video" : "image",
-    });
+    setPhotoPreview(URL.createObjectURL(file));
   }
 
   function handleTitleChange(e) {
@@ -171,46 +172,60 @@ export default function ArticleForm({ action, initial, submitLabel }) {
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-mono uppercase tracking-wide text-navy">
-          Foto ou vídeo da matéria
+          Foto da matéria
         </label>
         <span className="text-xs font-body text-navy mb-1">
-          Aparece na matéria, no card de listagem e na manchete (se for o caso). Opcional — até 25MB.
+          Aparece na matéria, no card de listagem e na manchete (se for o caso). Opcional — até 50MB.
         </span>
         <input
           type="file"
           name="media_file"
-          accept="image/*,video/*"
-          onChange={handleMediaChange}
+          accept="image/*"
+          onChange={handlePhotoChange}
           className="text-sm font-body file:mr-3 file:py-2 file:px-4 file:border-0 file:bg-ink file:text-paper file:font-bold file:cursor-pointer border border-paperDark bg-white px-2 py-2"
         />
 
-        {mediaPreview ? (
-          mediaPreview.type === "video" ? (
-            <video
-              src={mediaPreview.url}
-              controls
-              className="mt-2 max-h-64 border border-paperDark"
-            />
-          ) : (
-            <img
-              src={mediaPreview.url}
-              alt="Pré-visualização"
-              className="mt-2 max-h-64 object-cover border border-paperDark"
-            />
-          )
-        ) : initial?.media_url ? (
+        {photoPreview ? (
+          <img
+            src={photoPreview}
+            alt="Pré-visualização"
+            className="mt-2 max-h-64 object-cover border border-paperDark"
+          />
+        ) : initial?.media_type === "image" && initial?.media_url ? (
           <div className="mt-2">
-            <span className="text-xs font-body text-navy block mb-1">Mídia atual:</span>
-            {initial.media_type === "video" ? (
-              <video src={initial.media_url} controls className="max-h-64 border border-paperDark" />
-            ) : (
-              <img src={initial.media_url} alt="Mídia atual" className="max-h-64 object-cover border border-paperDark" />
-            )}
+            <span className="text-xs font-body text-navy block mb-1">Foto atual:</span>
+            <img src={initial.media_url} alt="Foto atual" className="max-h-64 object-cover border border-paperDark" />
             <span className="text-xs font-body text-navy block mt-1">
               Escolha um novo arquivo acima pra substituir.
             </span>
           </div>
         ) : null}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-mono uppercase tracking-wide text-navy">
+          Link do vídeo
+        </label>
+        <span className="text-xs font-body text-navy mb-1">
+          Cole o link de um vídeo já hospedado em algum lugar — anexo do Discord, YouTube,
+          Streamable, Medal etc. Não faz upload, então não conta no espaço do site.
+          Se preenchido, substitui a foto acima nessa matéria.
+        </span>
+        <input
+          type="text"
+          name="video_url"
+          value={videoUrl}
+          onChange={(e) => setVideoUrl(e.target.value)}
+          placeholder="https://cdn.discordapp.com/attachments/.../video.mp4"
+          className="border border-paperDark bg-white px-3 py-2 text-sm font-body outline-none focus:border-hanko"
+        />
+
+        {videoUrl && (
+          <div className="mt-2 max-w-md">
+            <span className="text-xs font-body text-navy block mb-1">Pré-visualização:</span>
+            <MediaEmbed mediaUrl={videoUrl} mediaType="video" className="w-full" />
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-1">

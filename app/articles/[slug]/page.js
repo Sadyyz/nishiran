@@ -5,6 +5,7 @@ import Masthead from "../../../components/Masthead";
 import Footer from "../../../components/Footer";
 import ArticleCard from "../../../components/ArticleCard";
 import Seal from "../../../components/Seal";
+import MediaEmbed from "../../../components/MediaEmbed";
 import { createClient } from "../../../lib/supabase/server";
 
 export const revalidate = 0;
@@ -69,19 +70,11 @@ export default async function ArticlePage({ params }) {
 
         {article.media_url && (
           <div className="mb-6 -mx-5 md:mx-0">
-            {article.media_type === "video" ? (
-              <video
-                src={article.media_url}
-                controls
-                className="w-full max-h-[480px] object-cover"
-              />
-            ) : (
-              <img
-                src={article.media_url}
-                alt={article.title}
-                className="w-full max-h-[480px] object-cover"
-              />
-            )}
+            <MediaEmbed
+              mediaUrl={article.media_url}
+              mediaType={article.media_type}
+              className="w-full max-h-[480px] object-cover"
+            />
           </div>
         )}
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Seal from "./Seal";
+import MediaEmbed from "./MediaEmbed";
 
 export default function Hero({ a }) {
   return (
@@ -9,22 +10,14 @@ export default function Hero({ a }) {
     >
       {a.media_url && (
         <div className="mb-5 -mx-5 md:-mx-10">
-          {a.media_type === "video" ? (
-            <video
-              src={a.media_url}
-              className="w-full max-h-[420px] object-cover"
-              controls
-              muted
-            />
-          ) : (
-            <img
-              src={a.media_url}
-              alt={a.title}
-              className="w-full max-h-[420px] object-cover"
-            />
-          )}
+          <MediaEmbed
+            mediaUrl={a.media_url}
+            mediaType={a.media_type}
+            className="w-full max-h-[420px] object-cover"
+          />
         </div>
       )}
+
 
       <div className="flex items-start gap-5">
         <Seal ch={a.seal} size={56} />

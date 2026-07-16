@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MediaEmbed from "./MediaEmbed";
 
 export default function ArticleCard({ a, compact }) {
   return (
@@ -8,19 +9,11 @@ export default function ArticleCard({ a, compact }) {
     >
       {a.media_url && (
         <div className={`mb-1 overflow-hidden ${compact ? "max-h-32" : "max-h-56"}`}>
-          {a.media_type === "video" ? (
-            <video
-              src={a.media_url}
-              className="w-full h-full object-cover"
-              muted
-            />
-          ) : (
-            <img
-              src={a.media_url}
-              alt={a.title}
-              className="w-full h-full object-cover"
-            />
-          )}
+          <MediaEmbed
+            mediaUrl={a.media_url}
+            mediaType={a.media_type}
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
       <div className="text-[11px] tracking-widest uppercase flex items-center gap-2 font-mono text-hanko">
