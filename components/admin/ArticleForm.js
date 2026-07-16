@@ -171,10 +171,10 @@ export default function ArticleForm({ action, initial, submitLabel }) {
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-mono uppercase tracking-wide text-navy">
-          Foto ou vídeo da manchete
+          Foto ou vídeo da matéria
         </label>
         <span className="text-xs font-body text-navy mb-1">
-          Só aparece se essa matéria virar a manchete (destaque do topo). Opcional — até 25MB.
+          Aparece na matéria, no card de listagem e na manchete (se for o caso). Opcional — até 25MB.
         </span>
         <input
           type="file"

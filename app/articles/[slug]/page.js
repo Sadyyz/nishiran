@@ -67,6 +67,24 @@ export default async function ArticlePage({ params }) {
           {article.subtitle}
         </p>
 
+        {article.media_url && (
+          <div className="mb-6 -mx-5 md:mx-0">
+            {article.media_type === "video" ? (
+              <video
+                src={article.media_url}
+                controls
+                className="w-full max-h-[480px] object-cover"
+              />
+            ) : (
+              <img
+                src={article.media_url}
+                alt={article.title}
+                className="w-full max-h-[480px] object-cover"
+              />
+            )}
+          </div>
+        )}
+
         <div className="flex items-center gap-3 pb-5 mb-6 border-b border-paperDark">
           <Seal ch={article.seal} size={40} />
           <div className="text-sm font-body text-navy">

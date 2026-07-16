@@ -6,6 +6,23 @@ export default function ArticleCard({ a, compact }) {
       href={`/articles/${a.slug}`}
       className="text-left group flex flex-col gap-2 pb-5 border-b border-paperDark"
     >
+      {a.media_url && (
+        <div className={`mb-1 overflow-hidden ${compact ? "max-h-32" : "max-h-56"}`}>
+          {a.media_type === "video" ? (
+            <video
+              src={a.media_url}
+              className="w-full h-full object-cover"
+              muted
+            />
+          ) : (
+            <img
+              src={a.media_url}
+              alt={a.title}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
+      )}
       <div className="text-[11px] tracking-widest uppercase flex items-center gap-2 font-mono text-hanko">
         <span>{a.category}</span>
         <span className="text-gold">·</span>
